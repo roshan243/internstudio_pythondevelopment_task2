@@ -1,0 +1,13 @@
+transaction_date,category,amount,description
+2025-01-05,Sales,1250.00,Online order
+2025-01-12,Marketing,220.50,Campaign materials
+2025-01-19,Operations,430.00,Office supplies
+2025-02-03,Sales,1840.00,Wholesale order
+2025-02-14,Marketing,315.25,Email campaign
+2025-02-21,Operations,510.00,Equipment repair
+2025-03-02,Sales,2100.00,Online order
+2025-03-11,Marketing,280.00,Promotional event
+2025-03-22,Operations,395.75,Shipping supplies
+2025-04-04,Sales,1630.00,Retail order
+2025-04-16,Marketing,190.00,Print campaign
+2025-04-25,Operations,620.00,Maintenance
