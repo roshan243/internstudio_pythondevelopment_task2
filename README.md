@@ -1,197 +1,114 @@
 # Automated Report Generation & Delivery System
 
-A modular Python CLI application that imports transaction data into SQLite,
-cleans and analyzes it with pandas, creates PDF and Excel reports with charts,
-archives every generated report, and can deliver reports by SMTP or generate
-them on a daily, weekly, or monthly schedule.
+A local-first Streamlit application for importing datasets, cleaning and analyzing data, generating professional PDF/Excel/CSV reports, archiving report history, scheduling recurring generation, and optionally sending PDF/Excel attachments by SMTP.
 
-## Objectives and features
+## Features
 
-- Collect transaction data from SQLite or import it from CSV.
-- Normalize dates, amounts, categories, and descriptions; skip invalid records
-  and prevent exact duplicate imports.
-- Calculate totals, averages, minimums, maximums, monthly summaries, and
-  category summaries, with inclusive date-range filtering.
-- Generate paginated PDF reports and formatted Excel workbooks with summary
-  tables, detailed data, and charts.
-- Preserve timestamped reports in both `reports/` and `archive/`.
-- Explicitly send archived report attachments through configurable SMTP.
-- Run a foreground APScheduler process for daily, weekly, or monthly reports.
-- Record activity in `logs/app.log`.
+- Streamlit dashboard backed by real SQLite report, schedule and email-delivery records.
+- Import CSV and Excel data; reject unsupported or oversized input, remove duplicate/blank rows and fill missing values.
+- Filter data by dates and numerical comparisons; select report columns.
+- Interactive Plotly analytics and summary statistics.
+- Generate PDF reports with tables, summary statistics and a Matplotlib visualization; Excel reports with data/summary sheets and charts; and CSV reports with summary metadata and rows.
+- Search/download report archive; destructive archive deletion requires an explicit confirmation.
+- Persistent daily, weekly and monthly schedules with a separate APScheduler worker.
+- SMTP delivery with configurable credentials, bounded retries and success/failure history.
+- Rotating application logs and isolated pytest coverage.
 
 ## Technologies
 
-Python 3.12+, SQLite, pandas, matplotlib, ReportLab, OpenPyXL, APScheduler,
-python-dotenv, argparse, logging, and pytest. Email uses Python's standard
-`smtplib`; no external API or paid service is required.
+Python 3.12+, Streamlit, Pandas, SQLite, Plotly, Matplotlib, ReportLab, OpenPyXL, APScheduler, SMTP, python-dotenv and Pytest.
 
-## Project structure
+## Screenshots
+
+No screenshots are included yet. Launch the app, open the desired page and capture it with the operating system screenshot shortcut. Store approved screenshots in `screenshots/`.
+
+## Folder Structure
 
 ```text
-automated_report_system/
-├── main.py
-├── config.py
-├── database.py
-├── data_collector.py
-├── data_processor.py
-├── pdf_generator.py
-├── excel_generator.py
-├── email_sender.py
-├── scheduler.py
-├── archive_manager.py
-├── data/
-│   └── sample_data.csv
-├── reports/
-├── archive/
-├── logs/
-├── tests/
+automated_report_generation_delivery/
+├── app.py
 ├── requirements.txt
+├── README.md
 ├── .env.example
-└── README.md
+├── .gitignore
+├── data/
+│   └── sample_sales.csv
+├── reporting/
+│   ├── archive.py
+│   ├── config.py
+│   ├── data_service.py
+│   ├── database.py
+│   ├── delivery.py
+│   ├── logging_config.py
+│   ├── report_generator.py
+│   ├── scheduler_worker.py
+│   └── scheduling.py
+├── reports/
+├── logs/
+├── screenshots/
+└── tests/
 ```
 
-## Installation
+The local database, `.env`, logs and generated report files are excluded from Git.
 
-Open a terminal in this directory. Python 3.12 or later is recommended.
+## Installation (Windows / VS Code)
+
+Open the project folder in VS Code, choose **Terminal → New Terminal**, and run:
 
 ```powershell
+cd "C:\path\to\Python Project\automated_report_generation_delivery"
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-On macOS or Linux, activate the environment with
-`source .venv/bin/activate`.
-
-## Initialize the database
-
-```powershell
-python main.py init
-```
-
-This creates `data/reports.db`, creates the transaction table and indexes, and
-imports the demonstration CSV. The import is safe to repeat: existing records
-are not duplicated. Sample data covers several months and business categories.
-
-## Import CSV data
-
-CSV files must contain `transaction_date`, `category`, and `amount` columns;
-`description` is optional. Dates should be parseable by pandas. Invalid dates
-and non-positive or invalid amounts are skipped; a blank category is recorded
-as `Uncategorized`.
-
-```powershell
-python main.py import --file data\sample_data.csv
-```
-
-## Generate reports
-
-```powershell
-python main.py generate --format pdf
-python main.py generate --format excel
-python main.py generate --format both
-python main.py generate --format both --start-date 2025-01-01 --end-date 2025-03-31
-```
-
-Each report is written under `reports/` and copied to `archive/` with a
-microsecond timestamp. PDF reports include executive statistics, monthly and
-category tables, a chart, transaction details, and page numbers. Excel
-workbooks include a summary sheet, monthly and category summary sheets, and a
-detailed transaction sheet.
-
-## Email configuration and delivery
-
-Copy `.env.example` to `.env`, then set the SMTP host, port, username, password,
-sender address, and TLS options for your mail provider. Use an app-specific
-password when required by the provider. `.env` is ignored by git.
-
-```powershell
+python -m pip install -r requirements.txt
 Copy-Item .env.example .env
-# Edit .env with your SMTP provider's settings.
-python main.py email --to recipient@example.com
-python main.py email --to first@example.com second@example.com --format pdf
 ```
 
-Email is only attempted by this explicit command. It attaches the newest
-archived report(s) matching the selected format. Without SMTP configuration,
-the command exits with a helpful message and does not attempt delivery. SMTP
-authentication, connection, and delivery errors are logged and surfaced.
+In Command Prompt, activate using `.venv\Scripts\activate.bat`. If PowerShell blocks activation, use `.venv\Scripts\python.exe` instead of `python`.
 
-## Scheduling
-
-The scheduler runs in the foreground and uses the machine's local time. Stop it
-with Ctrl+C. Daily runs occur every day; weekly runs default to Monday; monthly
-runs default to day 1 (configurable from day 1 through 28). Each scheduled run
-generates both formats and uses a non-overlapping, coalescing scheduler job.
-Email is opt-in: pass `--email-to` to deliver the generated attachments on each
-scheduled run; SMTP configuration is required. Without that option, scheduled
-jobs only generate and archive reports.
+## Launch the GUI
 
 ```powershell
-python main.py schedule --frequency daily --time 09:00
-python main.py schedule --frequency weekly --time 08:30 --day-of-week fri
-python main.py schedule --frequency monthly --time 07:15 --day-of-month 1
-python main.py schedule --frequency daily --time 09:00 --email-to recipient@example.com
+streamlit run app.py
 ```
 
-Keep the process and computer running for scheduled jobs to execute. Email is
-never sent by the scheduler unless one or more recipients are explicitly
-provided with `--email-to`.
+## Launch the Scheduler
 
-## Archive history and logs
+Open a second terminal in the project folder, activate the same environment, then run:
 
 ```powershell
-python main.py history
+python -m reporting.scheduler_worker
 ```
 
-The command lists archived PDF and Excel reports newest first. Application
-activity is also written to `logs/app.log`.
+The worker reloads schedule settings from SQLite every 30 seconds. Keep it running for scheduled reports to execute. The schedule uses the worker computer's local timezone.
+
+## Usage
+
+1. In **Data Collection**, upload a CSV/Excel file or load the included sample dataset.
+2. In **Data Analysis**, filter by date and number, inspect summary statistics and visualize grouped values.
+3. In **Report Builder**, select data/columns/filters, set the title, chart and format, and generate or save a reusable configuration.
+   The optional report destination accepts only a relative subfolder inside the configured archive directory.
+4. In **Report Archive**, search and download generated reports. Confirm before deleting an archived report.
+5. In **Scheduling**, choose a saved report configuration and schedule it.
+6. To email a PDF or Excel report, configure SMTP and use **Email Delivery**.
+
+## SMTP Configuration
+
+Set SMTP host, port, sender and (if required) username/password in `.env`. Credentials are never stored in source code or SQLite. For TLS-enabled SMTP, configure `SMTP_STARTTLS=true`; for implicit TLS, set `SMTP_USE_SSL=true` and use the provider's SSL port. Use an app-specific password if your provider requires one, and do not commit `.env`.
+
+For local testing without a real mail server, automated tests use a mocked SMTP client. A real email delivery requires user-provided SMTP settings and was not performed as part of tests.
 
 ## Testing
-
-Install the requirements and run:
 
 ```powershell
 python -m pytest -q
 ```
 
-Tests use temporary SQLite databases and report folders. SMTP behavior is
-mocked; the test suite never sends real email or accesses an external service.
+Tests use temporary SQLite databases, in-memory datasets and mocked SMTP; they do not send email or require an external service.
 
-## Sample CLI output
+## Known Limitations
 
-Generated filenames include the actual generation timestamp; paths and file
-sizes vary by machine.
-
-```text
-python main.py init
-INFO | Database initialized. Sample data: 12 inserted, 0 duplicates, 0 invalid.
-
-python main.py generate --format both
-INFO | Generated pdf report: ...\reports\transaction_report_....pdf
-INFO | Generated excel report: ...\reports\transaction_report_....xlsx
-
-python main.py history
-INFO | transaction_report_....xlsx | xlsx | ... bytes
-INFO | transaction_report_....pdf | pdf | ... bytes
-```
-
-## Screenshots
-
-No screenshots are included yet. After generating reports, open the PDF and
-workbook in your preferred viewer and add screenshots here if desired.
-
-## Configuration reference
-
-Optional path overrides are `REPORT_DATABASE_PATH`, `REPORTS_DIR`, `ARCHIVE_DIR`,
-and `LOGS_DIR`. Relative paths are resolved from this project directory. SMTP
-settings are `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`,
-`SMTP_SENDER`, `SMTP_USE_SSL`, `SMTP_USE_TLS`, and `SMTP_TIMEOUT`.
-
-## Future enhancements
-
-- Add configurable business-specific schemas and richer import mappings.
-- Support more delivery channels and per-report email templates.
-- Add retention policies, report metadata, and archive integrity checks.
-- Add scheduler persistence and timezone selection.
+- The scheduler is a separate local process and runs only while that process and computer remain active.
+- PDF tables are limited to the first 500 dataset rows to keep files manageable; full data remains available in Excel/CSV.
+- SMTP credentials and deliverability depend on the user's provider configuration and network policy.
+- Data and report files are local; configure backups appropriate to your needs.
+- If PyArrow cannot load on a machine, the interface shows a read-only text preview instead of an interactive table.
