@@ -20,7 +20,7 @@ Python 3.12+, Streamlit, Pandas, SQLite, Plotly, Matplotlib, ReportLab, OpenPyXL
 
 ## Screenshots
 
-No screenshots are included yet. Launch the app, open the desired page and capture it with the operating system screenshot shortcut. Store approved screenshots in `screenshots/`.
+Screenshots of the Streamlit Report Generation and Delivery System are available in the [screenshots folder](screenshots/).
 
 ## Folder Structure
 
