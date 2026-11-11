@@ -20,20 +20,26 @@ Python 3.12+, Streamlit, Pandas, SQLite, Plotly, Matplotlib, ReportLab, OpenPyXL
 
 ## Screenshots
 
-Screenshots of the Streamlit Report Generation and Delivery System are available in the [screenshots folder](screenshots/).
+The dashboard screenshot below shows one successful PDF report generated from the included `data/sample_sales.csv`. It uses a temporary database and report folder; no email is sent and the application's normal data is not changed. The earlier [dashboard screenshot](Screenshot%202026-11-11%20115251.png) is preserved as well. Only this README-linked image is included from `screenshots/`; other local captures remain ignored.
+
+![Report Generation and Delivery dashboard with one successful demo report](screenshots/dashboard-demo-data-headless.png)
 
 ## Folder Structure
 
 ```text
-automated_report_generation_delivery/
+internstudio_pythondevelopment_task2/
 ├── app.py
 ├── requirements.txt
 ├── README.md
 ├── .env.example
 ├── .gitignore
+├── .streamlit/
+│   └── config.toml
+├── Screenshot 2026-11-11 115251.png
 ├── data/
 │   └── sample_sales.csv
 ├── reporting/
+│   ├── __init__.py
 │   ├── archive.py
 │   ├── config.py
 │   ├── data_service.py
@@ -46,7 +52,13 @@ automated_report_generation_delivery/
 ├── reports/
 ├── logs/
 ├── screenshots/
+│   ├── .gitkeep
+│   └── dashboard-demo-data-headless.png
 └── tests/
+    ├── __init__.py
+    ├── test_data_service.py
+    ├── test_delivery_scheduling.py
+    └── test_reports.py
 ```
 
 The local database, `.env`, logs and generated report files are excluded from Git.
@@ -56,7 +68,7 @@ The local database, `.env`, logs and generated report files are excluded from Gi
 Open the project folder in VS Code, choose **Terminal → New Terminal**, and run:
 
 ```powershell
-cd "C:\path\to\Python Project\automated_report_generation_delivery"
+cd "C:\path\to\internstudio_pythondevelopment_task2"
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt

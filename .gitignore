@@ -10,3 +10,4 @@ reports/*
 !reports/.gitkeep
 screenshots/*
 !screenshots/.gitkeep
+!screenshots/dashboard-demo-data-headless.png
